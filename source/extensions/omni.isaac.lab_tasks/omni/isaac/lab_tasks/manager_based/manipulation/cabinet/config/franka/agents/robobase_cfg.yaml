@@ -1,0 +1,191 @@
+defaults:
+  - _self_
+  - env: null
+  - intrinsic_reward_module: null
+  - method: null
+  - launch: null
+  - reward_method: null
+  - override hydra/launcher: joblib
+
+# Universal settings
+create_train_env: true
+num_train_envs: null # Will be set in train.py
+replay_size_before_train: 2000
+num_pretrain_steps: 0
+num_train_frames: 1000000
+eval_every_steps: null
+num_eval_episodes: null
+update_every_steps: 2
+num_update_steps: 1
+num_explore_steps: 2000
+save_snapshot: false
+snapshot_every_n: 1000
+batch_size: 256
+
+# Demonstration settings
+demos: 0
+demo_batch_size: null  # If set to > 0, introduce a separate buffer for demos
+use_self_imitation: false  # When using a separate buffer for demos, If set to True, save successful (online) trajectories into the separate demo buffer
+
+# Observation settings
+pixels: false
+visual_observation_shape: [84, 84]
+frame_stack: 1
+frame_stack_on_channel: true
+use_onehot_time_and_no_bootstrap: false
+
+# Action settings
+action_repeat: 1
+action_sequence: 1 # ActionSequenceWrapper
+execution_length: 1  # If execution_length < action_sequence, we use receding horizon control
+temporal_ensemble: true  # Temporal ensemling only applicable to action sequence > 1
+temporal_ensemble_gain: 0.01
+use_standardization: false  # Demo-based standardization for action space
+use_min_max_normalization: false  # Demo-based min-max normalization for action space
+min_max_margin: 0.0  # If set to > 0, introduce margin for demo-driven min-max normalization
+norm_obs: false
+
+# Replay buffer settings
+replay:
+  prioritization: false
+  size: 1000000
+  gamma: 0.99
+  demo_size: null
+  save_dir: null
+  nstep: 3
+  num_workers: 4
+  pin_memory: true
+  alpha: 0.7  # prioritization
+  beta: 0.5  # prioritization
+  sequential: false
+  transition_seq_len: 1  # The length of transition sequence returned from sample() call. Only applicable if sequential is True
+
+# RLHF settings
+rlhf:
+  use_rlhf: false
+  feedback_type: random
+  comparison_type: root_pairwise
+  query_type: timestep
+  max_feedback: 1000
+  update_every_steps: 1
+  num_pretrain_steps: 0
+  num_train_frames: 1000
+  snapshot_every_n: 1000
+  gemini:
+    model_type: gemini-1.5-pro
+    temperature: 0.1
+    top_p: 1.0
+    top_k: 42
+    max_output_tokens: 512
+    target_viewpoints: [left_wrist, head]
+    output_path: null
+    task_description: null
+
+
+# Reward Model Replay buffer settings
+reward_replay:
+  size: 1000000
+  query_save_dir: null
+  feedback_save_dir: null
+  num_workers: 4
+  pin_memory: true
+  num_queries: 1
+  num_labels: 1
+  seq_len: 50
+  feedback_batch_size: 256
+  max_episode_number: 20
+
+# logging settings
+wandb:  # weight and bias
+  use: false
+  project: ${oc.env:USER}RoboBase
+  name: null
+
+tb:  # TensorBoard
+  use: true
+  log_dir: /tmp/robobase_tb_logs
+  name: null
+
+# Misc
+experiment_name: exp
+seed: 1
+num_gpus: 1
+log_every: 1000
+log_train_video: false
+log_eval_video: true
+log_pretrain_every: 100
+save_csv: false
+
+experiment:
+  directory: franka-cabinet
+  experiment_name: ""
+
+# method setting
+method:
+  _target_: robobase.method.sac_lix.SACLix
+  is_rl: true
+  num_explore_steps: 2000
+  actor_lr: 1.e-4
+  critic_lr: 1.e-4
+  view_fusion_lr: 1.e-4
+  encoder_lr: 1.e-4
+  weight_decay: 0.0
+  num_critics: 2
+  critic_target_tau: 0.01
+  actor_grad_clip: null
+  critic_grad_clip: null
+  always_bootstrap: false  # Always do bootstrap; could be useful for episodic task
+  bc_lambda: 0.0
+  action_sequence_network_type: rnn  # rnn, mlp
+  critic_updates_shared_vision_encoder: true
+  alpha_lr: 1.e-4
+  init_temperature: 0.1
+  distributional_critic: false
+  distributional_critic_limit: 20  # v_min / m_max for dist_critic
+  distributional_critic_atoms: 251
+  distributional_critic_transform: true  # hyperbolic/parabolic transformation to value
+
+  actor_model:
+    _target_: robobase.models.MLPWithBottleneckFeaturesAndSequenceOutput
+    _partial_: true
+    input_shapes: ???
+    output_shape: ???
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [ fused_view_feats, low_dim_obs, time_obs ]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [ 1024, 1024 ]
+    output_sequence_network_type: rnn
+    output_sequence_length: 1
+
+  critic_model:
+    _target_: robobase.models.MLPWithBottleneckFeatures
+    _partial_: true
+    input_shapes: ???
+    output_shape: 1
+    num_envs: ???
+    num_rnn_layers: 1
+    rnn_hidden_size: 128
+    keys_to_bottleneck: [ fused_view_feats, low_dim_obs, time_obs ]
+    bottleneck_size: 50
+    norm_after_bottleneck: true
+    tanh_after_bottleneck: true
+    mlp_nodes: [ 1024, 1024 ]
+
+  encoder_model:
+    _target_: robobase.models.lix_utils.analysis_modules.EncoderAllFeatTiedRegularizedCNNMultiViewDownsampleWithStrides
+    _partial_: true
+    input_shape: ???
+    num_downsample_convs: 1
+    num_post_downsample_convs: 3
+    channels: 32
+    kernel_size: 3
+
+  view_fusion_model:
+    _target_: robobase.models.FusionMultiCamFeature
+    _partial_: true
+    input_shape: ???
+    mode: flatten
