@@ -26,8 +26,8 @@ MDP terminations.
 
 
 def object_away_from_goal(
-    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("object"), threshold: float = 0.39
+    env: ManagerBasedRLEnv, asset_cfg: SceneEntityCfg = SceneEntityCfg("object"), threshold: float = 0.3
 ) -> torch.Tensor:
     """Terminate when the object is away from the goal."""
-    object: RigidObject = env.scene[asset_cfg.name]
-    return object.data.joint_pos[:, 3] > threshold
+    drawer_pos: RigidObject = env.scene[asset_cfg.name].data.joint_pos[:, asset_cfg.joint_ids[0]]
+    return drawer_pos > threshold

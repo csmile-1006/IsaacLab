@@ -252,7 +252,7 @@ class TerminationsCfg:
 
     task_success = DoneTerm(
         func=mdp.object_away_from_goal,
-        params={"threshold": 0.39, "asset_cfg": SceneEntityCfg("cabinet")},
+        params={"threshold": 0.25, "asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
         time_out=False,
     )
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
