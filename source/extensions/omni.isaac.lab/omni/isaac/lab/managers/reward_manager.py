@@ -50,8 +50,10 @@ class RewardManager(ManagerBase):
         super().__init__(cfg, env)
         # prepare extra info to store individual reward term information
         self._episode_sums = dict()
+        self._reward_terms = dict()
         for term_name in self._term_names:
             self._episode_sums[term_name] = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
+            self._reward_terms[term_name] = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
         # create buffer for managing reward per environment
         self._reward_buf = torch.zeros(self.num_envs, dtype=torch.float, device=self.device)
 
@@ -84,6 +86,11 @@ class RewardManager(ManagerBase):
         """Name of active reward terms."""
         return self._term_names
 
+    @property
+    def reward_terms(self) -> dict[str, torch.Tensor]:
+        """Episodic sum of individual reward terms."""
+        return self._reward_terms
+
     """
     Operations.
     """
@@ -110,7 +117,9 @@ class RewardManager(ManagerBase):
             extras["Episode_Reward/" + key] = episodic_sum_avg / self._env.max_episode_length_s
             # reset episodic sum
             self._episode_sums[key][env_ids] = 0.0
-        # reset all the reward terms
+            # reset reward terms
+            self._reward_terms[key][env_ids] = 0.0
+        # reset all the reward termskey
         for term_cfg in self._class_term_cfgs:
             term_cfg.func.reset(env_ids=env_ids)
         # return logged information
@@ -136,7 +145,9 @@ class RewardManager(ManagerBase):
             if term_cfg.weight == 0.0:
                 continue
             # compute term's value
-            value = term_cfg.func(self._env, **term_cfg.params) * term_cfg.weight * dt
+            term_value = term_cfg.func(self._env, **term_cfg.params)
+            value = term_value * term_cfg.weight * dt
+            self._reward_terms[name] = value
             # update total reward
             self._reward_buf += value
             # update episodic sum

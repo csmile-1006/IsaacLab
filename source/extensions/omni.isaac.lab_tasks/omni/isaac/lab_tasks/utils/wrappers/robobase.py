@@ -21,7 +21,7 @@ from __future__ import annotations
 import gymnasium as gym
 import torch
 import torch.nn as nn  # noqa: F401
-from typing import Any, Tuple
+from typing import Any
 
 from omni.isaac.lab.envs import DirectRLEnv, ManagerBasedRLEnv
 
@@ -40,7 +40,7 @@ class RobobaseVecEnvWrapper(gym.ActionWrapper):
         self.reset_once = True
         self.device = env.device
 
-    def step(self, actions: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Any]:
+    def step(self, actions: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, Any]:
         """Perform a step in the environment
 
         :param actions: The actions to perform
@@ -50,6 +50,7 @@ class RobobaseVecEnvWrapper(gym.ActionWrapper):
         :rtype: tuple of torch.Tensor and any other info
         """
         self._obs_dict, reward, terminated, truncated, info = self.env.step(actions)
+        info["task_success"] = self.env.termination_manager.terminated
         return (
             self._obs_dict,
             reward,
@@ -58,7 +59,7 @@ class RobobaseVecEnvWrapper(gym.ActionWrapper):
             info,
         )
 
-    def reset(self) -> Tuple[torch.Tensor, Any]:
+    def reset(self) -> tuple[torch.Tensor, Any]:
         """Reset the environment
 
         :return: Observation, info

@@ -189,6 +189,8 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         self.reset_time_outs = self.termination_manager.time_outs
         # -- reward computation
         self.reward_buf = self.reward_manager.compute(dt=self.step_dt)
+        for key, val in self.reward_manager.reward_terms.items():
+            self.extras["Reward/" + key] = val
 
         # -- reset envs that terminated/timed-out and log the episode information
         reset_env_ids = self.reset_buf.nonzero(as_tuple=False).squeeze(-1)
@@ -304,6 +306,18 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
         # action space (unbounded since we don't impose any limits)
         action_dim = sum(self.action_manager.action_term_dim)
         self.single_action_space = gym.spaces.Box(low=-np.inf, high=np.inf, shape=(action_dim,))
+
+        # reward space (for reward computation of each component)
+        single_reward_space = {}
+        for term_name in self.reward_manager.active_terms:
+            single_reward_space[f"Reward/{term_name}"] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=())
+            weight = self.reward_manager.get_term_cfg(term_name).weight
+            if weight > 0:
+                low, high = -1e-10, 10.0
+            elif weight < 0:
+                low, high = -1e-1, 1e-10
+            single_reward_space[f"Reward/{term_name}"] = gym.spaces.Box(low=low, high=high, shape=())
+        self.single_reward_space = gym.spaces.Dict(single_reward_space)
 
         # batch the spaces for vectorized environments
         self.observation_space = gym.vector.utils.batch_space(self.single_observation_space, self.num_envs)
