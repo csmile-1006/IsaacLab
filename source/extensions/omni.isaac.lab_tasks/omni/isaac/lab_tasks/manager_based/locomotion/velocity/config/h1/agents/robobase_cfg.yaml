@@ -12,7 +12,7 @@ create_train_env: true
 num_train_envs: null # Will be set in train.py
 replay_size_before_train: 2000
 num_pretrain_steps: 0
-num_train_frames: 1001000
+num_train_frames: 5001000
 eval_every_steps: null
 num_eval_episodes: null
 update_every_steps: 2
@@ -66,8 +66,8 @@ rlhf:
   feedback_type: script
   comparison_type: root_pairwise
   query_type: random
-  max_feedback: 2000
-  update_every_steps: 10000
+  max_feedback: 5000
+  update_every_steps: 50000
   num_pretrain_steps: 0
   num_unsup_train_frames: 10000
   num_train_frames: 200
@@ -92,7 +92,7 @@ reward_replay:
   feedback_save_dir: null
   num_workers: 4
   pin_memory: true
-  num_queries: 50
+  num_queries: 100
   num_labels: 1
   seq_len: 50
   feedback_batch_size: 128
@@ -120,7 +120,7 @@ log_pretrain_every: 100
 save_csv: false
 
 experiment:
-  directory: franka-cabinet
+  directory: h1-velocity
   experiment_name: ""
 
 # method setting

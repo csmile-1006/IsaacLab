@@ -120,7 +120,7 @@ log_pretrain_every: 100
 save_csv: false
 
 experiment:
-  directory: franka-cabinet
+  directory: allegro-cube
   experiment_name: ""
 
 # method setting

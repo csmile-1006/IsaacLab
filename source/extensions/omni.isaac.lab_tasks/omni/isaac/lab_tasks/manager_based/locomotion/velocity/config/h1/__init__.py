@@ -19,6 +19,7 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": rough_env_cfg.H1RoughEnvCfg,
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:H1RoughPPORunnerCfg",
+        "robobase_cfg_entry_point": f"{agents.__name__}:robobase_cfg.yaml",
     },
 )
 
@@ -41,6 +42,7 @@ gym.register(
     kwargs={
         "env_cfg_entry_point": flat_env_cfg.H1FlatEnvCfg,
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:H1FlatPPORunnerCfg",
+        "robobase_cfg_entry_point": f"{agents.__name__}:robobase_cfg.yaml",
     },
 )
 

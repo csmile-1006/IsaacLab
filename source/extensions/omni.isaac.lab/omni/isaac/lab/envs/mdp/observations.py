@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import omni.isaac.lab.utils.math as math_utils
 from omni.isaac.lab.assets import Articulation, RigidObject
 from omni.isaac.lab.managers import SceneEntityCfg
-from omni.isaac.lab.sensors import RayCaster
+from omni.isaac.lab.sensors import Camera, RayCaster
 
 if TYPE_CHECKING:
     from omni.isaac.lab.envs import ManagerBasedEnv, ManagerBasedRLEnv
@@ -180,6 +180,20 @@ def body_incoming_wrench(env: ManagerBasedEnv, asset_cfg: SceneEntityCfg) -> tor
     # obtain the link incoming forces in world frame
     link_incoming_forces = asset.root_physx_view.get_link_incoming_joint_force()[:, asset_cfg.body_ids]
     return link_incoming_forces.view(env.num_envs, -1)
+
+
+def image_scan(env: ManagerBasedEnv, camera_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Image scan from the given camera sensor."""
+    # extract the used quantities (to enable type-hinting)
+    camera: Camera = env.scene.sensors[camera_cfg.name]
+    return camera.data.output["rgb"][..., :3].type(torch.uint8)
+
+
+def depth_scan(env: ManagerBasedEnv, camera_cfg: SceneEntityCfg) -> torch.Tensor:
+    """Image scan from the given camera sensor."""
+    # extract the used quantities (to enable type-hinting)
+    camera: Camera = env.scene.sensors[camera_cfg.name]
+    return camera.data.output["distance_to_image_plane"]
 
 
 """

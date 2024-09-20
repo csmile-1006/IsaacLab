@@ -313,9 +313,9 @@ class ManagerBasedRLEnv(ManagerBasedEnv, gym.Env):
             single_reward_space[f"Reward/{term_name}"] = gym.spaces.Box(low=-np.inf, high=np.inf, shape=())
             weight = self.reward_manager.get_term_cfg(term_name).weight
             if weight > 0:
-                low, high = -1e-10, 10.0
+                low, high = -1e-10, 1e1
             elif weight < 0:
-                low, high = -1e-1, 1e-10
+                low, high = -1e-0, 1e-10
             single_reward_space[f"Reward/{term_name}"] = gym.spaces.Box(low=low, high=high, shape=())
         self.single_reward_space = gym.spaces.Dict(single_reward_space)
 

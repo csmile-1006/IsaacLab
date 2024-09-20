@@ -18,6 +18,9 @@ from omni.isaac.lab.utils import configclass
 
 import omni.isaac.lab_tasks.manager_based.classic.humanoid.mdp as mdp
 
+# from omni.isaac.lab.sensors import CameraCfg
+
+
 ##
 # Pre-defined configs
 ##
@@ -42,9 +45,21 @@ class MySceneCfg(InteractiveSceneCfg):
         ),
         debug_vis=False,
     )
-
     # robot
     robot = ANT_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+
+    # # camera
+    # front_camera = CameraCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/front_cam",
+    #     update_period=0.1,
+    #     height=256,
+    #     width=256,
+    #     data_types=["rgb"],
+    #     spawn=sim_utils.PinholeCameraCfg(
+    #         focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+    #     ),
+    #     offset=CameraCfg.OffsetCfg(pos=(0.510, 0.0, 0.015), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
+    # )
 
     # lights
     light = AssetBaseCfg(
@@ -105,8 +120,19 @@ class ObservationsCfg:
             self.enable_corruption = False
             self.concatenate_terms = True
 
+    # @configclass
+    # class VisualCfg(ObsGroup):
+    #     """Visual observations for the policy."""
+
+    #     rgb_front = ObsTerm(func=mdp.image_scan, params={"camera_cfg": SceneEntityCfg("front_camera")})
+
+    #     def __post_init__(self):
+    #         self.enable_corruption = False
+    #         self.concatenate_terms = True
+
     # observation groups
     policy: PolicyCfg = PolicyCfg()
+    # image: VisualCfg = VisualCfg()
 
 
 @configclass

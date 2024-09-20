@@ -152,10 +152,10 @@ class ObservationsCfg:
             func=mdp.joint_pos_rel,
             params={"asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
         )
-        cabinet_joint_vel = ObsTerm(
-            func=mdp.joint_vel_rel,
-            params={"asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
-        )
+        # cabinet_joint_vel = ObsTerm(
+        #     func=mdp.joint_vel_rel,
+        #     params={"asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
+        # )
         rel_ee_drawer_distance = ObsTerm(func=mdp.rel_ee_drawer_distance)
 
         actions = ObsTerm(func=mdp.last_action)
@@ -252,7 +252,7 @@ class TerminationsCfg:
 
     task_success = DoneTerm(
         func=mdp.object_away_from_goal,
-        params={"threshold": 0.25, "asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
+        params={"threshold": 0.2, "asset_cfg": SceneEntityCfg("cabinet", joint_names=["drawer_top_joint"])},
         time_out=False,
     )
     time_out = DoneTerm(func=mdp.time_out, time_out=True)
